@@ -1,0 +1,21 @@
+# Manual source lock for SDDx integrations.
+# Update this file only as part of a reviewed SDDx change.
+sources:
+  openspec:
+    repository: Fission-AI/OpenSpec
+    commit: e062b9572be933564ba3899d059377dfa1393e32
+    license: MIT
+    license_files: [third-party/openspec/LICENSE, skills/library/openspec/UPSTREAM-LICENSE.txt]
+    usage: Bundled OpenSpec workflow skills, schemas, templates, and documentation (16 skills)
+  ai-skills:
+    repository: wondelai/skills
+    commit: eade5d170b3a593c5b6ebcaca898102134aee108
+    license: MIT
+    license_files: [skills/library/ai-skills/UPSTREAM-LICENSE.txt, docs/ai-skills/UPSTREAM-LICENSE.txt]
+    usage: Bundled canonical capability skill snapshots (65 skills)
+  grill-skills:
+    repository: mattpocock/skills
+    commit: 3cca18b368ae95cdbdebbff572ccafa662551015
+    license: MIT
+    license_files: [skills/library/grill-skills/UPSTREAM-LICENSE.txt, docs/grill-skills/UPSTREAM-LICENSE.txt]
+    usage: Bundled engineering and grilling skill snapshots (37 skills)

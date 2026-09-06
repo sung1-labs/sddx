@@ -1,0 +1,68 @@
+{
+  "name": "@sung1-labs/sddx",
+  "version": "1.0.0",
+  "description": "Agentic SDLC for AI coding agents: spec-driven workflows from product discovery and architecture to implementation, verification, debugging, DevOps, and delivery.",
+  "type": "module",
+  "bin": {
+    "sddx": "./bin/sddx.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "scripts",
+    "skills",
+    "schemas",
+    "docs",
+    "third-party",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "source-manifest.yaml"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check bin/sddx.js && node --check src/*.mjs && node --check scripts/*.mjs",
+    "catalog": "node scripts/build-catalog.mjs",
+    "prepublishOnly": "npm test && npm run check && npm run catalog"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sung1-labs/sddx"
+  },
+  "homepage": "https://github.com/sung1-labs/sddx#readme",
+  "bugs": {
+    "url": "https://github.com/sung1-labs/sddx/issues"
+  },
+  "keywords": [
+    "openai",
+    "codex",
+    "agentic-ai",
+    "agentic-engineering",
+    "ai-coding-agent",
+    "ai-assisted-development",
+    "sdlc",
+    "software-development-lifecycle",
+    "sdd",
+    "spec-driven-development",
+    "openspec",
+    "agent-skills",
+    "ai-agents",
+    "coding-agents",
+    "software-architecture",
+    "system-design",
+    "product-discovery",
+    "ux-design",
+    "debugging",
+    "tdd",
+    "devops",
+    "developer-tools",
+    "engineering-workflow"
+  ]
+}
