@@ -35,11 +35,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sanjeevanbiswas/sddx.git"
+    "url": "git+https://github.com/sung1-labs/sddx.git"
   },
-  "homepage": "https://github.com/sanjeevanbiswas/sddx#readme",
+  "homepage": "https://github.com/sung1-labs/sddx#readme",
   "bugs": {
-    "url": "https://github.com/sanjeevanbiswas/sddx/issues"
+    "url": "https://github.com/sung1-labs/sddx/issues"
   },
   "keywords": [
     "openai",

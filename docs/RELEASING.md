@@ -21,7 +21,7 @@ The recommended setup uses npm trusted publishing with GitHub Actions, so no lon
 
 In npm package settings, add a GitHub Actions trusted publisher with:
 
-- Organization or user: `sanjeevanbiswas`
+- Organization or user: `sung1-labs`
 - Repository: `sddx`
 - Workflow filename: `publish.yml`
 - Environment: empty

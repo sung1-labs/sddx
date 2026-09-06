@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">SunG1 Labs square logo</title>
+  <desc id="desc">A rising sun and orbit mark surrounding an ascending number one.</desc>
+
+  <defs>
+    <linearGradient id="orbit" x1="166" y1="790" x2="858" y2="210" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#42D9FF"/>
+      <stop offset="1" stop-color="#FFB000"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="382" y1="300" x2="642" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE082"/>
+      <stop offset="1" stop-color="#FF9D00"/>
+    </linearGradient>
+    <radialGradient id="background" cx="50%" cy="40%" r="75%">
+      <stop offset="0" stop-color="#17243A"/>
+      <stop offset="1" stop-color="#0B1220"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="190" fill="url(#background)"/>
+
+  <!-- Rising sun and directional rays. -->
+  <g fill="none" stroke="#FFB000" stroke-linecap="round" stroke-width="34" opacity=".95">
+    <path d="M512 142v60"/>
+    <path d="M512 822v60"/>
+    <path d="M142 512h60"/>
+    <path d="M822 512h60"/>
+    <path d="m256 256 43 43"/>
+    <path d="m725 725 43 43"/>
+    <path d="m768 256-43 43"/>
+    <path d="m299 725-43 43"/>
+  </g>
+
+  <circle cx="512" cy="512" r="206" fill="url(#sun)"/>
+
+  <!-- The ascending 1 is the signature of SunG1. -->
+  <path d="M512 374v276M438 438l74-64 74 64" fill="none" stroke="#0B1220" stroke-linecap="round" stroke-linejoin="round" stroke-width="52"/>
+
+  <!-- Orbit expresses systems thinking and forward motion. -->
+  <path d="M150 672C274 890 625 947 825 685 938 537 874 314 746 222" fill="none" stroke="url(#orbit)" stroke-linecap="round" stroke-width="42"/>
+  <circle cx="743" cy="222" r="31" fill="#42D9FF"/>
+</svg>
