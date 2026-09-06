@@ -44,6 +44,7 @@ By default, initialization installs the complete capability bundle. Use a profil
 ~~~bash
 sddx init --platform codex --profile architecture --no-interactive
 sddx init --platform claude --skills system-design --no-interactive
+sddx init --platform codex --sync-platforms --no-interactive
 ~~~
 
 Available profiles are sdlc, product, architecture, frontend, backend, debugging, devops, and documentation. The core SDDx workflow skills and capability router are always installed.
@@ -58,7 +59,7 @@ Available profiles are sdlc, product, architecture, frontend, backend, debugging
 | OpenCode | .opencode/skills/ |
 | Generic | .agents/skills/ |
 
-Initialization is additive: existing files are preserved where possible. Commit the generated project state so another agent can resume it.
+Initialization preserves unrelated files. Interactive platform selection is synchronized: existing SDDx platforms are preselected, and deselected platforms have only their SDDx-managed skill directories removed. Commit the generated project state so another agent can resume it.
 
 ### Codex invocation
 
@@ -72,7 +73,7 @@ $sddx-verify
 $sddx-archive
 ~~~
 
-Restart Codex after `sddx init` if the skills are not listed. The `$skill-name` form is the Codex invocation syntax. The generated agent skill directory is only an invocation/discovery surface; all durable workflow documents remain under `sddx/`.
+Start Codex from the project directory or one of its subdirectories. Codex scans `.agents/skills` from the current directory up to the repository root. Restart Codex after `sddx init` if the skills are not listed. The `$skill-name` form is the Codex invocation syntax. The generated agent skill directory is only an invocation/discovery surface; all durable workflow documents remain under `sddx/`.
 
 ## Project layout
 

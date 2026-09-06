@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, writeFile, cp, readdir } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile, cp, readdir, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { PLATFORMS } from './platforms.mjs';
 import { resolveSkillSelection } from './skill-selection.mjs';
@@ -14,6 +14,78 @@ async function exists(target) {
   } catch {
     return false;
   }
+}
+
+export async function detectInstalledPlatforms(projectRoot) {
+  const absoluteRoot = path.resolve(projectRoot);
+  const configured = new Set();
+  for (const configPath of [
+    path.join(absoluteRoot, 'sddx', 'config.json'),
+    path.join(absoluteRoot, '.sddx', 'config.json'),
+  ]) {
+    if (!(await exists(configPath))) continue;
+    try {
+      const config = JSON.parse(await readFile(configPath, 'utf8'));
+      for (const platform of config.platforms ?? []) {
+        if (PLATFORMS[platform]) configured.add(platform);
+      }
+    } catch {
+      // A malformed config should not prevent the interactive picker from opening.
+    }
+  }
+
+  const directoryOwners = new Map();
+  for (const [id, platform] of Object.entries(PLATFORMS)) {
+    const owner = directoryOwners.get(platform.skillsDir) ?? [];
+    owner.push(id);
+    directoryOwners.set(platform.skillsDir, owner);
+  }
+  for (const [skillsDir, owners] of directoryOwners) {
+    if (owners.some((owner) => configured.has(owner))) continue;
+    if (await exists(path.join(absoluteRoot, skillsDir, 'sddx-explore', 'SKILL.md'))) {
+      configured.add(owners[0]);
+    }
+  }
+
+  return Object.keys(PLATFORMS).filter((platform) => configured.has(platform));
+}
+
+async function collectManagedSkillNames() {
+  const workflowRoot = path.join(SKILLS_ROOT, 'workflow');
+  const managed = new Set(['sddx-capability-router']);
+  const legacy = new Set();
+  for (const entry of await readdir(workflowRoot, { withFileTypes: true })) {
+    if (entry.isDirectory()) managed.add(entry.name);
+  }
+
+  const libraryRoot = path.join(SKILLS_ROOT, 'library');
+  for (const sourceEntry of await readdir(libraryRoot, { withFileTypes: true })) {
+    if (!sourceEntry.isDirectory()) continue;
+    const sourceRoot = path.join(libraryRoot, sourceEntry.name);
+    for (const skillEntry of await readdir(sourceRoot, { withFileTypes: true })) {
+      if (!skillEntry.isDirectory()) continue;
+      const source = path.join(sourceRoot, skillEntry.name);
+      const sourceContents = await readFile(path.join(source, 'SKILL.md'), 'utf8');
+      const metadata = parseSkillFrontmatter(sourceContents);
+      const installedName = cleanSkillName(sourceEntry.name, skillEntry.name, metadata.name);
+      managed.add(installedName);
+      if (skillEntry.name !== installedName) legacy.add(skillEntry.name);
+      if (metadata.name && metadata.name !== installedName) legacy.add(metadata.name);
+    }
+  }
+  return { managed, legacy };
+}
+
+async function removeSkillDirectories(projectRoot, platform, names) {
+  const skillsRoot = path.join(path.resolve(projectRoot), PLATFORMS[platform].skillsDir);
+  const removed = [];
+  for (const name of names) {
+    const target = path.join(skillsRoot, name);
+    if (!(await exists(target))) continue;
+    await rm(target, { recursive: true, force: true });
+    removed.push(path.relative(path.resolve(projectRoot), target));
+  }
+  return removed;
 }
 
 export async function resolveProjectLayout(projectRoot, requestedLayout) {
@@ -52,6 +124,14 @@ async function writeIfMissing(filePath, contents) {
     return true;
   }
   return false;
+}
+
+async function writeIfChanged(filePath, contents) {
+  const previous = await readFile(filePath, 'utf8').catch(() => null);
+  if (previous === contents) return false;
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, contents, 'utf8');
+  return true;
 }
 
 function yamlScalar(value) {
@@ -142,6 +222,13 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
   const workspaceRoot = path.join(absoluteRoot, layout.workspaceDir);
   const metadataRoot = path.join(absoluteRoot, layout.metadataDir);
   const packageCatalog = JSON.parse(await readFile(path.join(SKILLS_ROOT, 'capabilities', 'catalog.json'), 'utf8'));
+  const existingConfigPath = path.join(metadataRoot, 'config.json');
+  const existingConfig = await readFile(existingConfigPath, 'utf8')
+    .then((contents) => JSON.parse(contents))
+    .catch(() => null);
+  const configuredPlatforms = options.syncPlatforms
+    ? [...new Set(platforms)]
+    : [...new Set([...(existingConfig?.platforms ?? []).filter((platform) => PLATFORMS[platform]), ...platforms])];
   const selection = resolveSkillSelection({
     skills: options.skills ?? '',
     profile: options.profile ?? '',
@@ -149,10 +236,11 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
   });
   const selectedSkillSet = selection.mode === 'all' ? null : new Set(selection.skills);
   const config = {
+    ...existingConfig,
     version: 1,
     schema: 'spec-driven',
     workspaceDir: layout.workspaceDir,
-    platforms,
+    platforms: configuredPlatforms,
     schemaPath: `${layout.workspaceDir}/schemas/spec-driven`,
     skillRouting: 'automatic',
     externalPublishing: { confluence: 'opt-in' },
@@ -168,6 +256,16 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
   await mkdir(metadataRoot, { recursive: true });
 
   const created = [];
+  const updated = [];
+  const removed = [];
+  const managedNames = await collectManagedSkillNames();
+  for (const platform of Object.keys(PLATFORMS)) {
+    if (configuredPlatforms.includes(platform)) {
+      removed.push(...await removeSkillDirectories(absoluteRoot, platform, managedNames.legacy));
+    } else if (options.syncPlatforms) {
+      removed.push(...await removeSkillDirectories(absoluteRoot, platform, managedNames.managed));
+    }
+  }
   if (await writeIfMissing(path.join(workspaceRoot, 'config.yaml'), renderConfig(config))) {
     created.push(path.join(layout.workspaceDir, 'config.yaml'));
   }
@@ -179,6 +277,8 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
   }
   if (await writeIfMissing(path.join(metadataRoot, 'config.json'), `${JSON.stringify(config, null, 2)}\n`)) {
     created.push(path.join(layout.metadataDir, 'config.json'));
+  } else if (await writeIfChanged(path.join(metadataRoot, 'config.json'), `${JSON.stringify(config, null, 2)}\n`)) {
+    updated.push(path.join(layout.metadataDir, 'config.json'));
   }
   if (await writeIfMissing(
     path.join(metadataRoot, 'README.md'),
@@ -209,7 +309,16 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
     generatedSkills[platform] = await copySkills(absoluteRoot, platform, selectedSkillSet);
   }
 
-  return { root: absoluteRoot, created, generatedSkills, selection };
+  return {
+    root: absoluteRoot,
+    workspaceDir: layout.workspaceDir,
+    created,
+    updated,
+    removed,
+    generatedSkills,
+    selection,
+    platforms: configuredPlatforms,
+  };
 }
 
 export async function readProjectConfig(projectRoot) {

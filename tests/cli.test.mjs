@@ -5,7 +5,7 @@ import { access, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { initializeProject } from '../src/project.mjs';
+import { detectInstalledPlatforms, initializeProject } from '../src/project.mjs';
 import { createChange, nextForChange, readChange, updateChangeStage } from '../src/change.mjs';
 import { createRfc, createTechnologyBrief } from '../src/artifacts.mjs';
 import { evaluateProject } from '../src/verification.mjs';
@@ -103,6 +103,24 @@ test('initializes focused use-case bundles while retaining core workflows', asyn
   assert.deepEqual(oneSkill.selection.skills, ['system-design']);
   const oneSkillCatalog = JSON.parse(await readFile(path.join(oneSkillRoot, 'sddx/capability-catalog.json'), 'utf8'));
   assert.deepEqual(oneSkillCatalog.skills.map((skill) => skill.id), ['system-design']);
+});
+
+test('preselects installed platforms and removes deselected SDDx-managed skills', async () => {
+  const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'sddx-platform-sync-'));
+  await initializeProject(projectRoot, ['generic']);
+  assert.deepEqual(await detectInstalledPlatforms(projectRoot), ['generic']);
+
+  const result = await initializeProject(projectRoot, ['cursor'], { syncPlatforms: true, skills: 'system-design' });
+  assert.deepEqual(result.platforms, ['cursor']);
+  assert.equal(result.removed.length > 0, true);
+  assert.equal(await access(path.join(projectRoot, '.agents/skills/sddx-explore')).then(() => true, () => false), false);
+  assert.equal(await access(path.join(projectRoot, '.cursor/skills/sddx-explore/SKILL.md')).then(() => true, () => false), true);
+  assert.deepEqual(await detectInstalledPlatforms(projectRoot), ['cursor']);
+
+  const cleared = await initializeProject(projectRoot, [], { syncPlatforms: true, skills: 'system-design' });
+  assert.deepEqual(cleared.platforms, []);
+  assert.equal(await access(path.join(projectRoot, '.cursor/skills/sddx-explore')).then(() => true, () => false), false);
+  assert.deepEqual(await detectInstalledPlatforms(projectRoot), []);
 });
 
 test('supports explicit OpenSpec compatibility layout', async () => {

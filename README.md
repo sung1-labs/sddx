@@ -29,6 +29,9 @@ For automation:
 
 ```bash
 sddx init --platform codex,claude --no-interactive
+
+# Make an explicit platform list authoritative and remove deselected SDDx skills
+sddx init --platform codex --sync-platforms --no-interactive
 ```
 
 Install a focused use-case bundle instead of every capability:
@@ -40,7 +43,7 @@ sddx init --platform claude --skills system-design --no-interactive
 
 Available profiles are `sdlc`, `product`, `architecture`, `frontend`, `backend`, `debugging`, `devops`, and `documentation`. The core SDDx workflow skills and capability router are always installed. Without `--profile` or `--skills`, initialization installs the complete bundle.
 
-The interactive initializer presents a keyboard-first platform picker. Use the arrow keys to move, Space to select or deselect, Enter to confirm, `a` to select every platform, and Escape to cancel. SDDx writes the same portable workflow skills into each selected project-local skills directory. Use `--platform` for scripts and CI.
+The interactive initializer presents a keyboard-first platform picker. Existing SDDx platforms are detected and preselected. Use the arrow keys to move, Space to select or deselect, Enter to confirm, `a` to select every platform, and Escape to cancel. Confirming with a platform deselected removes only SDDx-managed skill directories for that platform; unrelated user skills are preserved. SDDx writes the same portable workflow skills into each selected project-local skills directory. Use `--platform` for scripts and CI.
 
 ### Codex skill invocation
 
@@ -54,7 +57,7 @@ $sddx-verify
 $sddx-archive
 ```
 
-Restart Codex after initialization if the new skills do not appear. The generated `.agents/skills/` files are only discovery adapters; workflow documents and change records remain in the project `sddx/` workspace.
+Start Codex from the project directory or one of its subdirectories, then use `/skills` or type `$sddx-explore`. Codex scans `.agents/skills` from the current directory up to the repository root. Restart Codex after initialization if the new skills do not appear. The generated `.agents/skills/` files are only discovery adapters; workflow documents and change records remain in the project `sddx/` workspace.
 
 ## Workflow
 

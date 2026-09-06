@@ -1,7 +1,7 @@
 import { mkdir, rename } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import process from 'node:process';
-import { initializeProject, listChanges, readProjectConfig, resolveProjectLayout } from './project.mjs';
+import { detectInstalledPlatforms, initializeProject, listChanges, readProjectConfig, resolveProjectLayout } from './project.mjs';
 import { parsePlatformList, PLATFORMS } from './platforms.mjs';
 import { createChange, listChangeRoots, nextForChange, readChange, updateChangeStage } from './change.mjs';
 import { createRfc, createTechnologyBrief } from './artifacts.mjs';
@@ -14,8 +14,9 @@ const { version } = require('../package.json');
 const PRODUCT_DESCRIPTION = 'Turn intent into a durable, reviewable trail of exploration, architecture, implementation, evidence, and verified delivery—portable across AI agents and IDEs.';
 const BANNER = [
   '╭────────────────────────────────────────────────────────────╮',
-  '│  ◉  SDDx                                                   │',
-  '│     Spec-driven delivery for AI-assisted engineering       │',
+  '│        ✦  S U N G 1   L A B S  ✦                          │',
+  '│                         S D D x                            │',
+  '│  @sung1-labs/sddx  ·  Spec-driven delivery for AI agents  │',
   '╰────────────────────────────────────────────────────────────╯',
 ];
 
@@ -52,13 +53,14 @@ function positionalArgs(args, valueOptions = []) {
   return values;
 }
 
-async function askForPlatforms() {
+async function askForPlatforms(projectRoot) {
   if (!process.stdin.isTTY || !process.stdout.isTTY || typeof process.stdin.setRawMode !== 'function') {
     throw new Error('Interactive platform selection needs a TTY. Use --platform <names> or --platform all.');
   }
 
   const entries = Object.entries(PLATFORMS);
-  const selected = new Set();
+  const installed = new Set(await detectInstalledPlatforms(projectRoot));
+  const selected = new Set(installed);
   let cursor = 0;
 
   return new Promise((resolve, reject) => {
@@ -77,7 +79,8 @@ async function askForPlatforms() {
       entries.forEach(([id, platform], index) => {
         const marker = selected.has(id) ? paint('●', '38;5;45') : '○';
         const pointer = index === cursor ? paint('❯', '38;5;214') : ' ';
-        console.log(`${pointer} ${marker} ${platform.label} ${paint(`(${id})`, '2')}`);
+        const state = installed.has(id) ? paint(' already configured', '2') : '';
+        console.log(`${pointer} ${marker} ${platform.label} ${paint(`(${id})`, '2')}${state}`);
       });
       if (message) console.log(`\n${paint(message, '38;5;214')}`);
     };
@@ -98,7 +101,7 @@ async function askForPlatforms() {
       } else if (key.toLowerCase() === 'a') {
         entries.forEach(([id]) => selected.add(id));
       } else if (key === '\r' || key === '\n') {
-        if (selected.size === 0) {
+        if (selected.size === 0 && installed.size === 0) {
           render('Select at least one platform with Space, then press Enter.');
           return;
         }
@@ -127,20 +130,30 @@ async function initCommand(args) {
   let platforms;
 
   if (explicitPlatforms) {
+    printBanner();
     platforms = explicitPlatforms.toLowerCase() === 'all' ? Object.keys(PLATFORMS) : parsePlatformList(explicitPlatforms);
   } else if (hasFlag(args, '--no-interactive')) {
+    printBanner();
     throw new Error('Non-interactive init requires --platform <names> or --platform all.');
   } else {
     printBanner();
-    platforms = await askForPlatforms();
+    platforms = await askForPlatforms(projectRoot);
   }
 
-  const result = await initializeProject(projectRoot, platforms, { skills, profile, layout });
+  const result = await initializeProject(projectRoot, platforms, {
+    skills,
+    profile,
+    layout,
+    syncPlatforms: !explicitPlatforms || hasFlag(args, '--sync-platforms'),
+  });
   console.log(`Initialized SDDx in ${result.root}`);
-  console.log(`Platforms: ${platforms.map((platform) => PLATFORMS[platform].label).join(', ')}`);
+  console.log(`Platforms: ${result.platforms.length > 0 ? result.platforms.map((platform) => PLATFORMS[platform].label).join(', ') : 'none'}`);
   console.log(`Skill scope: ${result.selection.mode}${result.selection.profiles.length > 0 ? ` (${result.selection.profiles.join(', ')})` : ''}`);
   console.log(`Capabilities installed: ${result.selection.skills.length}`);
   if (result.created.length > 0) console.log(`Created: ${result.created.join(', ')}`);
+  if (result.updated.length > 0) console.log(`Updated: ${result.updated.join(', ')}`);
+  if (result.removed.length > 0) console.log(`Removed SDDx-managed skills: ${result.removed.join(', ')}`);
+  console.log(`Durable documents: ${result.workspaceDir}/`);
   console.log('Generated workflow skills for each selected platform.');
   console.log('Next recommended step: $sddx-explore');
 }
@@ -290,7 +303,7 @@ function help() {
   console.log(`SDDx ${version} — Spec-Driven Development for AI-assisted engineering
 
 Usage:
-  sddx init [path] [--platform <names>] [--profile <name>] [--skills <ids>] [--layout sddx|openspec] [--no-interactive]
+  sddx init [path] [--platform <names>] [--profile <name>] [--skills <ids>] [--layout sddx|openspec] [--sync-platforms] [--no-interactive]
   sddx new <change-name> [--workflow full|quick|debug] [--path <project>]
   sddx status [path] [--path <project>] [--json]
   sddx next [path] [--path <project>] [--json]
@@ -314,6 +327,7 @@ Workspace layouts:
 General options:
   -h, --help       Show this help message
   -v, --version    Show the installed SDDx version
+      --sync-platforms  Make the selected platform list authoritative and remove deselected SDDx-managed skills
 `);
 }
 
