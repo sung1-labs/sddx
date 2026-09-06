@@ -11,8 +11,8 @@ Use `sddx-capability-router` before each implementation slice. Select the most r
 
 Before using a new framework, library, platform, database, or infrastructure tool, run the project's technology-check workflow. Use approved bundled or pinned technology guidance before writing the integration.
 
-If implementation exposes an unresolved product, architecture, security, deployment, or operational decision, pause and recommend returning to `/sddx:explore` or `/sddx:propose`. Do not silently invent a decision.
+If implementation exposes an unresolved product, architecture, security, deployment, or operational decision, pause and recommend returning to `$sddx-explore` or `$sddx-propose`. Do not silently invent a decision.
 
-When tasks are complete, recommend `/sddx:verify`. Verification is mandatory whenever implementation files changed.
+When tasks are complete, recommend `$sddx-verify`. Verification is mandatory whenever implementation files changed.
 
 Before handoff, persist the stage with `sddx stage <change-name> verify` and update `handoff.md`.

@@ -125,9 +125,9 @@ test('creates full, quick, and debug change artifacts with next-step metadata', 
 
   assert.equal(full.files.includes('exploration.md'), true);
   assert.equal(full.files.includes('proposal.md'), false);
-  assert.equal(nextForChange(full).command, '/sddx:propose');
-  assert.equal(nextForChange(quick).command, '/sddx:verify');
-  assert.equal(nextForChange(debug).command, '/sddx:debug');
+  assert.equal(nextForChange(full).command, '$sddx-propose');
+  assert.equal(nextForChange(quick).command, '$sddx-verify');
+  assert.equal(nextForChange(debug).command, '$sddx-debug');
 });
 
 test('creates local RFC and technology-check artifacts without external publishing', async () => {

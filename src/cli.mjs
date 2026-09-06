@@ -142,7 +142,7 @@ async function initCommand(args) {
   console.log(`Capabilities installed: ${result.selection.skills.length}`);
   if (result.created.length > 0) console.log(`Created: ${result.created.join(', ')}`);
   console.log('Generated workflow skills for each selected platform.');
-  console.log('Next recommended step: /sddx:explore');
+  console.log('Next recommended step: $sddx-explore');
 }
 
 async function statusCommand(args) {
@@ -163,7 +163,7 @@ async function statusCommand(args) {
   console.log(`Platforms: ${result.platforms.length > 0 ? result.platforms.join(', ') : 'none'}`);
   console.log(`Active changes: ${result.changes.length > 0 ? result.changes.join(', ') : 'none'}`);
   for (const change of details) console.log(`Next for ${change.name}: ${change.next.command} (${change.next.reason})`);
-  if (details.length === 0) console.log('Next recommended step: /sddx:explore');
+  if (details.length === 0) console.log('Next recommended step: $sddx-explore');
 }
 
 async function newCommand(args) {
@@ -174,7 +174,7 @@ async function newCommand(args) {
   const result = await createChange(projectRoot, name, workflow);
   console.log(`Created ${result.workflow} change: ${result.slug}`);
   console.log(`Location: ${result.changeRoot}`);
-  console.log(`Next recommended step: ${result.workflow === 'debug' ? '/sddx:debug' : result.workflow === 'quick' ? '/sddx:apply' : '/sddx:explore'}`);
+  console.log(`Next recommended step: ${result.workflow === 'debug' ? '$sddx-debug' : result.workflow === 'quick' ? '$sddx-apply' : '$sddx-explore'}`);
 }
 
 async function nextCommand(args) {
@@ -190,7 +190,7 @@ async function nextCommand(args) {
     return;
   }
   if (recommendations.length === 0) {
-    console.log('Next recommended step: /sddx:explore');
+    console.log('Next recommended step: $sddx-explore');
     return;
   }
   for (const item of recommendations) console.log(`${item.change}: ${item.command} — ${item.reason}`);
@@ -234,7 +234,7 @@ async function archiveCommand(args) {
   const destination = `${archiveRoot}/${detail.name}`;
   await rename(changeRoot, destination);
   console.log(`Archived verified change: ${detail.name}`);
-  console.log('Next recommended step: /sddx:explore');
+  console.log('Next recommended step: $sddx-explore');
 }
 
 async function rfcCommand(args) {

@@ -42,6 +42,20 @@ Available profiles are `sdlc`, `product`, `architecture`, `frontend`, `backend`,
 
 The interactive initializer presents a keyboard-first platform picker. Use the arrow keys to move, Space to select or deselect, Enter to confirm, `a` to select every platform, and Escape to cancel. SDDx writes the same portable workflow skills into each selected project-local skills directory. Use `--platform` for scripts and CI.
 
+### Codex skill invocation
+
+For Codex, `.agents/skills/` is the expected project skill directory. SDDx installs workflow skills there with names such as `sddx-explore` and `sddx-propose`. Use `/skills` to open the selector or invoke them directly with:
+
+```text
+$sddx-explore
+$sddx-propose
+$sddx-apply
+$sddx-verify
+$sddx-archive
+```
+
+Restart Codex after initialization if the new skills do not appear. The `/sddx:explore` form is not Codex syntax.
+
 ## Workflow
 
 ```text
@@ -114,8 +128,8 @@ sddx --version
 
 ```bash
 sddx new billing-export
-# The agent runs /sddx:explore, then /sddx:propose, /sddx:apply,
-# /sddx:verify, and /sddx:archive as the artifacts become ready.
+# In Codex, the agent runs $sddx-explore, then $sddx-propose, $sddx-apply,
+# $sddx-verify, and $sddx-archive as the artifacts become ready.
 sddx next
 sddx verify
 sddx archive billing-export

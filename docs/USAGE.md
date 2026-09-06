@@ -60,6 +60,20 @@ Available profiles are sdlc, product, architecture, frontend, backend, debugging
 
 Initialization is additive: existing files are preserved where possible. Commit the generated project state so another agent can resume it.
 
+### Codex invocation
+
+Codex discovers project skills from `.agents/skills/`. There is no separate `codex/` directory. Open `/skills` to browse the selector, or invoke the generated workflow skills directly:
+
+~~~text
+$sddx-explore
+$sddx-propose
+$sddx-apply
+$sddx-verify
+$sddx-archive
+~~~
+
+Restart Codex after `sddx init` if the skills are not listed. The `$skill-name` form is the Codex invocation syntax; `/sddx:explore` is not.
+
 ## Project layout
 
 ~~~text
@@ -105,11 +119,11 @@ explore → propose → apply → verify → archive
 Typical agent handoff:
 
 ~~~text
-/sddx:explore
-/sddx:propose
-/sddx:apply
-/sddx:verify
-/sddx:archive
+$sddx-explore
+$sddx-propose
+$sddx-apply
+$sddx-verify
+$sddx-archive
 ~~~
 
 The full change starts with exploration, decisions, and handoff artifacts. The propose workflow creates OpenSpec planning artifacts: proposal, capability delta specs, optional design, and tasks.

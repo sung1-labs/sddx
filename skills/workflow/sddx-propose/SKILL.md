@@ -11,6 +11,6 @@ Use `sddx-capability-router` to select the relevant OpenSpec proposal/design cap
 
 Recommend an RFC or architecture document for cross-team, architectural, breaking, security-sensitive, infrastructure, or high-risk changes. Ask before publishing externally. Keep the local RFC as the canonical source and treat Confluence or another provider as a published projection.
 
-Do not implement code. End by recommending `/sddx:apply`, `/sddx:quick`, `/sddx:debug`, or a return to `/sddx:explore` when the artifacts are not ready.
+Do not implement code. End by recommending `$sddx-apply`, `$sddx-quick`, `$sddx-debug`, or a return to `$sddx-explore` when the artifacts are not ready.
 
 When the proposal is approved, persist the handoff with `sddx stage <change-name> apply` and update `handoff.md`.

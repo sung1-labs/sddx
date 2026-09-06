@@ -26,20 +26,20 @@ const TEMPLATES = {
   full: {
     'exploration.md': '# Exploration\n\n## Outcome\n\n## Applicable concerns\n\n- [ ] Product and user outcome\n- [ ] UX and interaction\n- [ ] Domain and data\n- [ ] Architecture and integrations\n- [ ] Security and compliance\n- [ ] Testing and quality\n- [ ] Deployment and operations\n- [ ] Rollback and recovery\n\n## Decisions\n\n## Open questions\n',
     'decisions.md': '# Decisions\n\nRecord important decisions and rejected alternatives here.\n',
-    'handoff.md': '# Handoff\n\n## Current stage\nexplore\n\n## Next recommended workflow\n/sddx:explore\n',
+    'handoff.md': '# Handoff\n\n## Current stage\nexplore\n\n## Next recommended workflow\n$sddx-explore\n',
   },
   quick: {
     'intent.md': '# Quick Change Intent\n\n## Desired outcome\n\n## Scope\n\n## Why this is low risk\n',
     'tasks.md': '# Tasks\n\n- [ ] 1.1 Implement the smallest safe change and record verification evidence\n',
     'verification.md': '# Verification\n\n## Checks\n\n## Evidence\n\n## Result\n',
-    'handoff.md': '# Handoff\n\n## Current stage\napply\n\n## Next recommended workflow\n/sddx:apply\n',
+    'handoff.md': '# Handoff\n\n## Current stage\napply\n\n## Next recommended workflow\n$sddx-apply\n',
   },
   debug: {
     'bug-report.md': '# Bug Report\n\n## Symptoms\n\n## Reproduction\n\n## Expected behavior\n\n## Actual behavior\n',
     'diagnosis.md': '# Diagnosis\n\n## Evidence\n\n## Hypotheses\n\n## Root cause\n',
     'fix.md': '# Fix\n\n## Change made\n\n## Regression coverage\n',
     'verification.md': '# Verification\n\n## Regression checks\n\n## Evidence\n\n## Result\n',
-    'handoff.md': '# Handoff\n\n## Current stage\ndiagnose\n\n## Next recommended workflow\n/sddx:debug\n',
+    'handoff.md': '# Handoff\n\n## Current stage\ndiagnose\n\n## Next recommended workflow\n$sddx-debug\n',
   },
 };
 
@@ -116,12 +116,12 @@ export async function updateChangeStage(projectRoot, name, stage) {
 
 export function nextForChange(change) {
   const routes = {
-    explore: { command: '/sddx:propose', reason: 'turn resolved exploration into durable proposal artifacts' },
-    propose: { command: '/sddx:apply', reason: 'implement the approved change' },
-    apply: { command: '/sddx:verify', reason: 'run the unified quality gate' },
-    diagnose: { command: '/sddx:debug', reason: 'continue evidence-based diagnosis' },
-    verify: { command: '/sddx:archive', reason: 'preserve and complete the verified change' },
-    archive: { command: '/sddx:explore', reason: 'start the next change' },
+    explore: { command: '$sddx-propose', reason: 'turn resolved exploration into durable proposal artifacts' },
+    propose: { command: '$sddx-apply', reason: 'implement the approved change' },
+    apply: { command: '$sddx-verify', reason: 'run the unified quality gate' },
+    diagnose: { command: '$sddx-debug', reason: 'continue evidence-based diagnosis' },
+    verify: { command: '$sddx-archive', reason: 'preserve and complete the verified change' },
+    archive: { command: '$sddx-explore', reason: 'start the next change' },
   };
-  return routes[change.currentStage] ?? { command: '/sddx:status', reason: 'inspect the current change state' };
+  return routes[change.currentStage] ?? { command: 'sddx status', reason: 'inspect the current change state' };
 }

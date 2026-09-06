@@ -11,7 +11,7 @@ Before each grilling round, use `sddx-capability-router` to select relevant bund
 
 Run focused rounds only for concerns relevant to the change. Record confirmed decisions, rejected alternatives, risks, unresolved questions, and applicability decisions in the active change's durable artifacts.
 
-Before recommending proposal creation, confirm each applicable concern is resolved or explicitly documented as deferred with a reason and risk. If the user asks to capture the work, recommend `/sddx:propose`.
+Before recommending proposal creation, confirm each applicable concern is resolved or explicitly documented as deferred with a reason and risk. If the user asks to capture the work, recommend `$sddx-propose`.
 
 Always end with:
 
@@ -20,4 +20,4 @@ Always end with:
 - What remains unresolved.
 - The recommended next workflow and alternatives.
 
-When the exploration is ready for proposal, persist the handoff with `sddx stage <change-name> propose` and update `handoff.md`.
+When the exploration is ready for proposal, persist the handoff with `sddx stage <change-name> propose` and update `handoff.md`. In Codex, the next skill is `$sddx-propose`.
