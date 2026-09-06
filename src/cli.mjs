@@ -1,5 +1,6 @@
 import { createInterface } from 'node:readline/promises';
 import { mkdir, rename } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import process from 'node:process';
 import { initializeProject, listChanges, readProjectConfig } from './project.mjs';
 import { formatPlatformChoices, parsePlatformList, PLATFORMS } from './platforms.mjs';
@@ -7,6 +8,9 @@ import { createChange, listChangeRoots, nextForChange, readChange, updateChangeS
 import { createRfc, createTechnologyBrief } from './artifacts.mjs';
 import { evaluateProject } from './verification.mjs';
 import { recommendSkills } from './routing.mjs';
+
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json');
 
 function optionValue(args, name) {
   const index = args.indexOf(name);
@@ -211,7 +215,7 @@ async function skillsCommand(args) {
 }
 
 function help() {
-  console.log(`SDDx — Spec-Driven Development for AI-assisted engineering
+  console.log(`SDDx ${version} — Spec-Driven Development for AI-assisted engineering
 
 Usage:
   sddx init [path] [--platform <names>] [--profile <name>] [--skills <ids>] [--no-interactive]
@@ -230,11 +234,23 @@ Platforms:
 
 Skill profiles:
   sdlc, product, architecture, frontend, backend, debugging, devops, documentation
+
+General options:
+  -h, --help       Show this help message
+  -v, --version    Show the installed SDDx version
 `);
 }
 
 export async function main(args) {
   const [command = 'help'] = args;
+  if (command === '--version' || command === '-v' || command === 'version') {
+    console.log(version);
+    return;
+  }
+  if (command === '--help' || command === '-h' || command === 'help' || hasFlag(args, '--help') || hasFlag(args, '-h')) {
+    help();
+    return;
+  }
   if (command === 'init') return initCommand(args.slice(1));
   if (command === 'new') return newCommand(args.slice(1));
   if (command === 'status') return statusCommand(args.slice(1));

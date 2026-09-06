@@ -103,6 +103,13 @@ sddx rfc create Create a local RFC/design-document draft
 sddx tech check Create a technology research brief before adoption
 ```
 
+Show CLI help or the installed version:
+
+```bash
+sddx --help
+sddx --version
+```
+
 ### Typical feature
 
 ```bash

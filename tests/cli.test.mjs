@@ -1,13 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { promisify } from 'node:util';
 import { initializeProject } from '../src/project.mjs';
 import { createChange, nextForChange, readChange, updateChangeStage } from '../src/change.mjs';
 import { createRfc, createTechnologyBrief } from '../src/artifacts.mjs';
 import { evaluateProject } from '../src/verification.mjs';
 import { recommendSkills } from '../src/routing.mjs';
+
+const execFileAsync = promisify(execFile);
+
+test('exposes conventional help and version flags', async () => {
+  const bin = path.resolve('bin/sddx.js');
+  const packageJson = JSON.parse(await readFile(path.resolve('package.json'), 'utf8'));
+  const version = await execFileAsync(process.execPath, [bin, '--version']);
+  const shortVersion = await execFileAsync(process.execPath, [bin, '-v']);
+  const help = await execFileAsync(process.execPath, [bin, '--help']);
+  const commandHelp = await execFileAsync(process.execPath, [bin, 'help']);
+
+  assert.equal(version.stdout.trim(), packageJson.version);
+  assert.equal(shortVersion.stdout.trim(), packageJson.version);
+  assert.match(help.stdout, new RegExp(`SDDx ${packageJson.version}`));
+  assert.match(help.stdout, /--version/);
+  assert.equal(commandHelp.stdout, help.stdout);
+});
 
 test('initializes durable OpenSpec-compatible project state for selected platforms', async () => {
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'sddx-'));
