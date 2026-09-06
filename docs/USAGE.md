@@ -31,7 +31,7 @@ For automation:
 sddx init --platform codex,claude --no-interactive
 ~~~
 
-Use --platform all to configure every supported platform.
+Use --platform all to configure every supported platform. In interactive mode, use the arrow keys to move through the platform list, Space to select or deselect, Enter to confirm, `a` to select all, and Escape to cancel.
 
 By default, initialization installs the complete capability bundle. Use a profile or one or more exact catalog ids for a focused installation:
 

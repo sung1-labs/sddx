@@ -1,9 +1,8 @@
-import { createInterface } from 'node:readline/promises';
 import { mkdir, rename } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import process from 'node:process';
 import { initializeProject, listChanges, readProjectConfig } from './project.mjs';
-import { formatPlatformChoices, parsePlatformList, PLATFORMS } from './platforms.mjs';
+import { parsePlatformList, PLATFORMS } from './platforms.mjs';
 import { createChange, listChangeRoots, nextForChange, readChange, updateChangeStage } from './change.mjs';
 import { createRfc, createTechnologyBrief } from './artifacts.mjs';
 import { evaluateProject } from './verification.mjs';
@@ -11,6 +10,25 @@ import { recommendSkills } from './routing.mjs';
 
 const require = createRequire(import.meta.url);
 const { version } = require('../package.json');
+
+const PRODUCT_DESCRIPTION = 'Turn intent into a durable, reviewable trail of exploration, architecture, implementation, evidence, and verified delivery—portable across AI agents and IDEs.';
+const BANNER = [
+  '╭────────────────────────────────────────────────────────────╮',
+  '│  ◉  SDDx                                                   │',
+  '│     Spec-driven delivery for AI-assisted engineering       │',
+  '╰────────────────────────────────────────────────────────────╯',
+];
+
+function paint(text, code) {
+  if (!process.stdout.isTTY || process.env.NO_COLOR) return text;
+  return `\u001b[${code}m${text}\u001b[0m`;
+}
+
+function printBanner() {
+  console.log(BANNER.map((line, index) => paint(line, index === 1 ? '38;5;45' : '38;5;214')).join('\n'));
+  console.log(paint(PRODUCT_DESCRIPTION, '2'));
+  console.log();
+}
 
 function optionValue(args, name) {
   const index = args.indexOf(name);
@@ -35,19 +53,69 @@ function positionalArgs(args, valueOptions = []) {
 }
 
 async function askForPlatforms() {
-  const readline = createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    console.log('Which AI-agent platforms should SDDx configure?');
-    console.log(formatPlatformChoices());
-    const answer = await readline.question('Choose one or more numbers, or type "all": ');
-    if (answer.trim().toLowerCase() === 'all') return Object.keys(PLATFORMS);
-    const choices = answer.split(',').map((item) => Number.parseInt(item.trim(), 10));
-    const names = choices.filter(Number.isInteger).map((choice) => Object.keys(PLATFORMS)[choice - 1]).filter(Boolean);
-    if (names.length === 0) throw new Error('Select at least one platform.');
-    return names;
-  } finally {
-    readline.close();
+  if (!process.stdin.isTTY || !process.stdout.isTTY || typeof process.stdin.setRawMode !== 'function') {
+    throw new Error('Interactive platform selection needs a TTY. Use --platform <names> or --platform all.');
   }
+
+  const entries = Object.entries(PLATFORMS);
+  const selected = new Set();
+  let cursor = 0;
+
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      process.stdin.removeListener('data', onData);
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
+    };
+
+    const render = (message = '') => {
+      process.stdout.write('\u001b[2J\u001b[H');
+      printBanner();
+      console.log(paint('Choose the AI-agent platforms to configure', '1;37'));
+      console.log(paint('↑/↓ move  Space select  Enter confirm  A all  Esc cancel', '2'));
+      console.log();
+      entries.forEach(([id, platform], index) => {
+        const marker = selected.has(id) ? paint('●', '38;5;45') : '○';
+        const pointer = index === cursor ? paint('❯', '38;5;214') : ' ';
+        console.log(`${pointer} ${marker} ${platform.label} ${paint(`(${id})`, '2')}`);
+      });
+      if (message) console.log(`\n${paint(message, '38;5;214')}`);
+    };
+
+    const onData = (input) => {
+      const key = input.toString();
+      if (key === '\u0003' || key === '\u001b' || key === '\u001b\u001b') {
+        cleanup();
+        reject(new Error('Platform selection cancelled.'));
+        return;
+      }
+      if (key === '\u001b[A' || key === 'k') cursor = (cursor - 1 + entries.length) % entries.length;
+      else if (key === '\u001b[B' || key === 'j') cursor = (cursor + 1) % entries.length;
+      else if (key === ' ') {
+        const id = entries[cursor][0];
+        if (selected.has(id)) selected.delete(id);
+        else selected.add(id);
+      } else if (key.toLowerCase() === 'a') {
+        entries.forEach(([id]) => selected.add(id));
+      } else if (key === '\r' || key === '\n') {
+        if (selected.size === 0) {
+          render('Select at least one platform with Space, then press Enter.');
+          return;
+        }
+        const names = entries.map(([id]) => id).filter((id) => selected.has(id));
+        cleanup();
+        process.stdout.write('\u001b[2J\u001b[H');
+        resolve(names);
+        return;
+      }
+      render();
+    };
+
+    process.stdin.setRawMode(true);
+    process.stdin.resume();
+    process.stdin.on('data', onData);
+    render();
+  });
 }
 
 async function initCommand(args) {
@@ -62,6 +130,7 @@ async function initCommand(args) {
   } else if (hasFlag(args, '--no-interactive')) {
     throw new Error('Non-interactive init requires --platform <names> or --platform all.');
   } else {
+    printBanner();
     platforms = await askForPlatforms();
   }
 
@@ -215,6 +284,7 @@ async function skillsCommand(args) {
 }
 
 function help() {
+  printBanner();
   console.log(`SDDx ${version} — Spec-Driven Development for AI-assisted engineering
 
 Usage:

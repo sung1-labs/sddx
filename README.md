@@ -40,7 +40,7 @@ sddx init --platform claude --skills sddx-ai-system-design --no-interactive
 
 Available profiles are `sdlc`, `product`, `architecture`, `frontend`, `backend`, `debugging`, `devops`, and `documentation`. The core SDDx workflow skills and capability router are always installed. Without `--profile` or `--skills`, initialization installs the complete bundle.
 
-The interactive initializer asks which agent platforms to configure. You can select one, several, or `all`. SDDx writes the same portable workflow skills into each selected project-local skills directory.
+The interactive initializer presents a keyboard-first platform picker. Use the arrow keys to move, Space to select or deselect, Enter to confirm, `a` to select every platform, and Escape to cancel. SDDx writes the same portable workflow skills into each selected project-local skills directory. Use `--platform` for scripts and CI.
 
 ## Workflow
 
