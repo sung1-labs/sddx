@@ -4,7 +4,7 @@
   "description": "Agentic SDLC for AI coding agents: spec-driven workflows from product discovery and architecture to implementation, verification, debugging, DevOps, and delivery.",
   "type": "module",
   "bin": {
-    "sddx": "./bin/sddx.js"
+    "sddx": "bin/sddx.js"
   },
   "files": [
     "bin",
@@ -35,7 +35,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sanjeevanbiswas/sddx"
+    "url": "git+https://github.com/sanjeevanbiswas/sddx.git"
   },
   "homepage": "https://github.com/sanjeevanbiswas/sddx#readme",
   "bugs": {
