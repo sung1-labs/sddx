@@ -43,7 +43,7 @@ By default, initialization installs the complete capability bundle. Use a profil
 
 ~~~bash
 sddx init --platform codex --profile architecture --no-interactive
-sddx init --platform claude --skills sddx-ai-system-design --no-interactive
+sddx init --platform claude --skills system-design --no-interactive
 ~~~
 
 Available profiles are sdlc, product, architecture, frontend, backend, debugging, devops, and documentation. The core SDDx workflow skills and capability router are always installed.
@@ -72,7 +72,7 @@ $sddx-verify
 $sddx-archive
 ~~~
 
-Restart Codex after `sddx init` if the skills are not listed. The `$skill-name` form is the Codex invocation syntax; `/sddx:explore` is not.
+Restart Codex after `sddx init` if the skills are not listed. The `$skill-name` form is the Codex invocation syntax. The generated agent skill directory is only an invocation/discovery surface; all durable workflow documents remain under `sddx/`.
 
 ## Project layout
 

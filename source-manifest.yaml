@@ -1,4 +1,5 @@
-# Manual source lock for SDDx integrations.
+# Manual source lock for SDDx integrations. Source snapshot paths remain
+# traceable; generated project skill names use concise user-facing ids.
 # Update this file only as part of a reviewed SDDx change.
 sources:
   openspec:

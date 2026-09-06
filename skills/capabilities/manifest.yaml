@@ -4,58 +4,58 @@
 profiles:
   explore:
     primary:
-      - sddx-grill-productivity-grilling
-      - sddx-ai-continuous-discovery
-      - sddx-grill-engineering-research
+      - grilling
+      - continuous-discovery
+      - research
     supporting:
-      - sddx-ai-system-design
-      - sddx-ai-domain-driven-design
-      - sddx-ai-design-everyday-things
+      - system-design
+      - domain-driven-design
+      - design-everyday-things
   propose:
     primary:
-      - sddx-ai-system-design
-      - sddx-grill-engineering-codebase-design
-      - sddx-grill-engineering-domain-modeling
+      - system-design
+      - codebase-design
+      - domain-modeling
     supporting:
-      - sddx-ai-clean-architecture
-      - sddx-grill-engineering-to-spec
-      - sddx-ai-technical-documentation
+      - clean-architecture
+      - to-spec
+      - technical-documentation
   apply:
     primary:
-      - sddx-grill-engineering-implement
-      - sddx-grill-engineering-tdd
-      - sddx-ai-clean-code
+      - implement
+      - tdd
+      - clean-code
     supporting:
-      - sddx-ai-refactoring-patterns
-      - sddx-ai-release-it
-      - sddx-ai-technical-documentation
+      - refactoring-patterns
+      - release-it
+      - technical-documentation
   verify:
     primary:
-      - sddx-grill-engineering-code-review
-      - sddx-grill-engineering-tdd
-      - sddx-ai-improve-code-quality
+      - code-review
+      - tdd
+      - improve-code-quality
     supporting:
-      - sddx-ai-architecture-optimization
-      - sddx-ai-release-it
-      - sddx-ai-ux-heuristics
+      - architecture-optimization
+      - release-it
+      - ux-heuristics
   debug:
     primary:
-      - sddx-grill-engineering-diagnosing-bugs
-      - sddx-grill-engineering-triage
-      - sddx-ai-working-with-legacy-code
+      - diagnosing-bugs
+      - triage
+      - working-with-legacy-code
     supporting:
-      - sddx-ai-ddia-systems
-      - sddx-ai-high-perf-browser
-      - sddx-grill-engineering-tdd
+      - ddia-systems
+      - high-perf-browser
+      - tdd
   archive:
     primary:
-      - sddx-grill-productivity-handoff
-      - sddx-ai-technical-documentation
-      - sddx-ai-release-it
+      - handoff
+      - technical-documentation
+      - release-it
     supporting:
-      - sddx-grill-in-progress-retro
-      - sddx-grill-engineering-to-tickets
-      - sddx-openspec-openspec-sync-specs
+      - retro
+      - to-tickets
+      - sync-specs
 router:
   name: sddx-capability-router
   stages: [explore, propose, apply, verify, debug, archive]

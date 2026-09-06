@@ -1,5 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { cleanSkillName, parseSkillFrontmatter } from '../src/skill-naming.mjs';
 
 const root = path.resolve(new URL('..', import.meta.url).pathname);
 const libraryRoot = path.join(root, 'skills', 'library');
@@ -20,16 +21,6 @@ async function findSkills(directory) {
     else if (entry.isFile() && entry.name === 'SKILL.md') result.push(entryPath);
   }
   return result;
-}
-
-function frontmatter(contents) {
-  const match = contents.match(/^---\n([\s\S]*?)\n---/);
-  const values = {};
-  for (const line of match?.[1]?.split('\n') ?? []) {
-    const item = line.match(/^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/);
-    if (item) values[item[1]] = item[2].replace(/^['"]|['"]$/g, '');
-  }
-  return values;
 }
 
 const ROLE_RULES = [
@@ -54,8 +45,8 @@ const STAGE_FOCUS = {
   archive: /handoff|retro|technical-documentation|release-it|to-tickets|sync-specs|archive|release-openspec/,
 };
 
-function route(source, identifier, description) {
-  const slug = identifier.toLowerCase();
+function route(source, identifier, description, sourceIdentifier = identifier) {
+  const slug = sourceIdentifier.toLowerCase();
   const text = `${slug} ${source === 'openspec' ? description : ''}`;
   const roles = new Set();
   const stages = new Set();
@@ -93,18 +84,24 @@ function route(source, identifier, description) {
 }
 
 const skills = [];
+const identifiers = new Map();
 for (const source of Object.keys(sources)) {
   const sourceRoot = path.join(libraryRoot, source);
   for (const filePath of await findSkills(sourceRoot)) {
     const relativePath = path.relative(root, filePath);
     const contents = await readFile(filePath, 'utf8');
-    const metadata = frontmatter(contents);
-    const identifier = path.basename(path.dirname(filePath));
-    const routing = route(source, identifier, metadata.description ?? '');
+    const metadata = parseSkillFrontmatter(contents);
+    const sourceIdentifier = path.basename(path.dirname(filePath));
+    const identifier = cleanSkillName(source, sourceIdentifier, metadata.name);
+    if (identifiers.has(identifier)) {
+      throw new Error(`Duplicate installed skill name "${identifier}" from ${identifiers.get(identifier)} and ${source}/${sourceIdentifier}.`);
+    }
+    identifiers.set(identifier, `${source}/${sourceIdentifier}`);
+    const routing = route(source, identifier, metadata.description ?? '', sourceIdentifier);
     const requiresExternalCli = /requires\s+openspec\s+cli/i.test(metadata.compatibility ?? '');
     skills.push({
       id: identifier,
-      name: metadata.name ?? identifier,
+      name: identifier,
       description: metadata.description ?? '',
       source,
       commit: sources[source].commit,

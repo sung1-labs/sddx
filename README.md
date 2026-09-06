@@ -35,7 +35,7 @@ Install a focused use-case bundle instead of every capability:
 
 ```bash
 sddx init --platform codex --profile architecture --no-interactive
-sddx init --platform claude --skills sddx-ai-system-design --no-interactive
+sddx init --platform claude --skills system-design --no-interactive
 ```
 
 Available profiles are `sdlc`, `product`, `architecture`, `frontend`, `backend`, `debugging`, `devops`, and `documentation`. The core SDDx workflow skills and capability router are always installed. Without `--profile` or `--skills`, initialization installs the complete bundle.
@@ -54,7 +54,7 @@ $sddx-verify
 $sddx-archive
 ```
 
-Restart Codex after initialization if the new skills do not appear. The `/sddx:explore` form is not Codex syntax.
+Restart Codex after initialization if the new skills do not appear. The generated `.agents/skills/` files are only discovery adapters; workflow documents and change records remain in the project `sddx/` workspace.
 
 ## Workflow
 
@@ -199,7 +199,7 @@ The project-local `sddx/routing-manifest.yaml` records the default primary and s
 
 Workflow skills are copied into the selected agent directories, while capability skills are routed by role, workflow stage, and change type. They can be invoked automatically from that routing metadata or manually by an agent/user.
 
-SDDx bundles the reviewed skill snapshots from OpenSpec, ai-skills, and grill-skills. Their source revisions and licenses are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [source-manifest.yaml](source-manifest.yaml). Run `npm run catalog` after a deliberate upstream snapshot update; updates are manual.
+SDDx bundles the reviewed skill snapshots from OpenSpec, ai-skills, and grill-skills. Their source revisions and licenses are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [source-manifest.yaml](source-manifest.yaml). Installed capability names are normalized to concise names; the source snapshot paths and attribution metadata remain preserved. Run `npm run catalog` after a deliberate upstream snapshot update; updates are manual.
 
 The current bundle contains 118 distinct upstream skill directories. Generated platform mirrors are intentionally not duplicated. `sddx-capability-router` narrows the library to the relevant skills for the active stage, while every bundled skill remains directly available for manual use. SDDx also ships the OpenSpec `spec-driven` schema, its proposal/spec/design/task templates, and offline reference documentation from all three bundled sources.
 

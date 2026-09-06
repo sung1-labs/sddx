@@ -2,6 +2,7 @@ import { access, mkdir, readFile, writeFile, cp, readdir } from 'node:fs/promise
 import path from 'node:path';
 import { PLATFORMS } from './platforms.mjs';
 import { resolveSkillSelection } from './skill-selection.mjs';
+import { cleanSkillName, parseSkillFrontmatter, rewriteInstalledSkillName } from './skill-naming.mjs';
 
 const PACKAGE_ROOT = path.resolve(new URL('..', import.meta.url).pathname);
 const SKILLS_ROOT = path.join(PACKAGE_ROOT, 'skills');
@@ -115,11 +116,19 @@ async function copySkills(projectRoot, platform, selectedSkills) {
     const sourceRoot = path.join(libraryRoot, sourceEntry.name);
     const librarySkills = await readdir(sourceRoot, { withFileTypes: true });
     for (const skillEntry of librarySkills) {
-      if (!skillEntry.isDirectory() || (selectedSkills && !selectedSkills.has(skillEntry.name))) continue;
+      if (!skillEntry.isDirectory()) continue;
       const source = path.join(sourceRoot, skillEntry.name);
-      const target = path.join(targetRoot, skillEntry.name);
+      const sourceSkill = path.join(source, 'SKILL.md');
+      const sourceContents = await readFile(sourceSkill, 'utf8');
+      const metadata = parseSkillFrontmatter(sourceContents);
+      const installedName = cleanSkillName(sourceEntry.name, skillEntry.name, metadata.name);
+      if (selectedSkills && !selectedSkills.has(installedName)) continue;
+      const target = path.join(targetRoot, installedName);
       await mkdir(target, { recursive: true });
       await cp(source, target, { recursive: true, force: true });
+      if (installedName !== metadata.name) {
+        await writeFile(path.join(target, 'SKILL.md'), rewriteInstalledSkillName(sourceContents, installedName), 'utf8');
+      }
       copied.push(path.relative(projectRoot, path.join(target, 'SKILL.md')));
     }
   }

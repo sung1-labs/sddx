@@ -47,13 +47,16 @@ test('initializes durable OpenSpec-compatible project state for selected platfor
   assert.match(openSpecConfig, /schema: spec-driven/);
   assert.match(openSpecConfig, /operations:/);
   assert.equal((await readFile(path.join(projectRoot, 'sddx/schemas/spec-driven/schema.yaml'), 'utf8')).includes('id: specs'), true);
+  const importedOpenSpecSkill = await readFile(path.join(projectRoot, '.agents/skills/apply-change/SKILL.md'), 'utf8');
+  assert.match(importedOpenSpecSkill, /^name: apply-change/m);
+  assert.equal(await access(path.join(projectRoot, '.agents/skills/sddx-openspec-openspec-apply-change')).then(() => true, () => false), false);
 
   const explore = await readFile(path.join(projectRoot, '.agents/skills/sddx-explore/SKILL.md'), 'utf8');
   assert.match(explore, /SDDx Explore/);
   assert.match(explore, /deployment/);
   const router = await readFile(path.join(projectRoot, '.agents/skills/sddx-capability-router/SKILL.md'), 'utf8');
   assert.match(router, /capability-catalog/);
-  assert.match(await readFile(path.join(projectRoot, 'sddx/routing-manifest.yaml'), 'utf8'), /sddx-grill-productivity-grilling/);
+  assert.match(await readFile(path.join(projectRoot, 'sddx/routing-manifest.yaml'), 'utf8'), /grilling/);
   const catalog = JSON.parse(await readFile(path.join(projectRoot, 'sddx/capability-catalog.json'), 'utf8'));
   assert.equal(catalog.skills.length, 118);
   assert.equal(catalog.skills.some((skill) => skill.requiresExternalCli === true && skill.automatic === false), true);
@@ -71,10 +74,12 @@ test('initializes durable OpenSpec-compatible project state for selected platfor
   assert.equal(recommendations.some((skill) => skill.requiresExternalCli), false);
 
   const exploreProduct = await recommendSkills(projectRoot, { stage: 'explore', roles: ['product'] });
-  assert.equal(exploreProduct.some((skill) => skill.id === 'sddx-grill-productivity-grilling'), true);
+  assert.equal(exploreProduct.some((skill) => skill.id === 'grilling'), true);
 
   const verifyEngineering = await recommendSkills(projectRoot, { stage: 'verify', roles: ['engineering'] });
-  assert.equal(verifyEngineering.some((skill) => skill.id === 'sddx-grill-engineering-code-review'), true);
+  assert.equal(verifyEngineering.some((skill) => skill.id === 'code-review'), true);
+  assert.equal(catalog.skills.some((skill) => /^sddx-(ai|grill|openspec)-/.test(skill.id)), false);
+  assert.equal(catalog.skills.some((skill) => skill.path.includes('sddx-ai-')), true);
 });
 
 test('initializes focused use-case bundles while retaining core workflows', async () => {
@@ -83,21 +88,21 @@ test('initializes focused use-case bundles while retaining core workflows', asyn
 
   assert.equal(result.selection.mode, 'selected');
   assert.deepEqual(result.selection.profiles, ['architecture']);
-  assert.equal(result.selection.skills.includes('sddx-ai-system-design'), true);
-  assert.equal(result.selection.skills.includes('sddx-grill-engineering-codebase-design'), true);
+  assert.equal(result.selection.skills.includes('system-design'), true);
+  assert.equal(result.selection.skills.includes('codebase-design'), true);
 
   const catalog = JSON.parse(await readFile(path.join(projectRoot, 'sddx/capability-catalog.json'), 'utf8'));
   assert.equal(catalog.skills.length, result.selection.skills.length);
   assert.equal(catalog.skills.every((skill) => result.selection.skills.includes(skill.id)), true);
   assert.equal((await readFile(path.join(projectRoot, '.agents/skills/sddx-explore/SKILL.md'), 'utf8')).includes('SDDx Explore'), true);
-  assert.equal((await readFile(path.join(projectRoot, '.agents/skills/sddx-ai-system-design/SKILL.md'), 'utf8')).includes('system design'), true);
+  assert.equal((await readFile(path.join(projectRoot, '.agents/skills/system-design/SKILL.md'), 'utf8')).includes('system design'), true);
   assert.equal((await readFile(path.join(projectRoot, '.agents/skills/sddx-capability-router/SKILL.md'), 'utf8')).includes('capability-catalog'), true);
 
   const oneSkillRoot = await mkdtemp(path.join(os.tmpdir(), 'sddx-one-skill-'));
-  const oneSkill = await initializeProject(oneSkillRoot, ['generic'], { skills: 'sddx-ai-system-design' });
-  assert.deepEqual(oneSkill.selection.skills, ['sddx-ai-system-design']);
+  const oneSkill = await initializeProject(oneSkillRoot, ['generic'], { skills: 'system-design' });
+  assert.deepEqual(oneSkill.selection.skills, ['system-design']);
   const oneSkillCatalog = JSON.parse(await readFile(path.join(oneSkillRoot, 'sddx/capability-catalog.json'), 'utf8'));
-  assert.deepEqual(oneSkillCatalog.skills.map((skill) => skill.id), ['sddx-ai-system-design']);
+  assert.deepEqual(oneSkillCatalog.skills.map((skill) => skill.id), ['system-design']);
 });
 
 test('supports explicit OpenSpec compatibility layout', async () => {

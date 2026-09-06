@@ -18,4 +18,4 @@ The imported skill content remains available under `skills/library/`, with suppo
 
 These records are included in the published npm package. SDDx's own original CLI, workflow, routing, and integration code is covered by the root `LICENSE`.
 
-Directory names are SDDx installation identifiers; the imported skill content and frontmatter are preserved. Updates are manual and reviewable; there is no automatic upstream deployment. Any future adaptation must retain its upstream attribution and license requirements.
+The bundled library keeps source snapshot directories and attribution metadata for reviewability. When skills are installed into a project, SDDx uses concise user-facing names and adapts only the installed frontmatter name; the imported skill content and upstream license records remain bundled. Updates are manual and reviewable; there is no automatic upstream deployment. Any future adaptation must retain its upstream attribution and license requirements.
