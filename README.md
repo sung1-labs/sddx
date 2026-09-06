@@ -4,7 +4,7 @@
 
 SDDx is a stateless, agent-neutral Spec-Driven Development toolkit for OpenAI Codex and other AI coding agents. It turns product intent into durable specifications, architecture decisions, implementation tasks, verification evidence, and delivery handoffs.
 
-Read the [complete usage guide](docs/USAGE.md) for platform setup, workflow selection, artifact lifecycle, routed skills, practical use cases, technology checks, RFCs, and troubleshooting.
+Read the [complete usage guide](docs/USAGE.md) for platform setup, workflow selection, artifact lifecycle, routed skills, practical use cases, technology checks, RFCs, and troubleshooting. See the [release guide](docs/RELEASING.md) for automated npm publishing.
 
 ## Install
 
