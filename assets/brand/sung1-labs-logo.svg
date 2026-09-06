@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">SunG1 Labs</title>
+  <desc id="desc">SunG1 Labs logo with a rising sun and orbit mark beside the SunG1 Labs wordmark.</desc>
+
+  <defs>
+    <linearGradient id="orbit" x1="44" y1="232" x2="244" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#42D9FF"/>
+      <stop offset="1" stop-color="#FFB000"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="78" y1="82" x2="178" y2="182" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE082"/>
+      <stop offset="1" stop-color="#FF9D00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Compact mark: a rising sun held in an orbital system. -->
+  <g transform="translate(28 40)">
+    <rect width="280" height="280" rx="72" fill="#0B1220"/>
+
+    <g fill="none" stroke="#FFB000" stroke-linecap="round" stroke-width="10" opacity=".95">
+      <path d="M140 39v18"/>
+      <path d="M140 223v18"/>
+      <path d="m39 140 18 0"/>
+      <path d="m223 140 18 0"/>
+      <path d="m68.6 68.6 12.7 12.7"/>
+      <path d="m198.7 198.7 12.7 12.7"/>
+      <path d="m211.4 68.6-12.7 12.7"/>
+      <path d="m81.3 198.7-12.7 12.7"/>
+    </g>
+
+    <circle cx="140" cy="140" r="58" fill="url(#sun)"/>
+
+    <!-- The ascending 1 gives the mark its SunG1 signature. -->
+    <path d="M140 101v78M119 119l21-18 21 18" fill="none" stroke="#0B1220" stroke-linecap="round" stroke-linejoin="round" stroke-width="14"/>
+
+    <path d="M30 184C65 250 171 267 231 191 265 148 246 83 208 55" fill="none" stroke="url(#orbit)" stroke-linecap="round" stroke-width="12"/>
+    <circle cx="207" cy="55" r="9" fill="#42D9FF"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g fill="#0B1220" font-family="Inter, Avenir Next, Helvetica Neue, Arial, sans-serif">
+    <text x="370" y="194" font-size="112" font-weight="750" letter-spacing="-4">SunG1</text>
+    <text x="378" y="252" fill="#536174" font-size="34" font-weight="650" letter-spacing="13">LABS</text>
+  </g>
+
+  <circle cx="696" cy="167" r="8" fill="#FFB000"/>
+</svg>
