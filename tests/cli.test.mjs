@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -32,26 +32,29 @@ test('initializes durable OpenSpec-compatible project state for selected platfor
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'sddx-'));
   const result = await initializeProject(projectRoot, ['generic', 'cursor']);
 
-  assert.equal(result.created.includes('openspec/config.yaml'), true);
-  assert.equal(result.created.includes('.sddx/config.json'), true);
-  assert.equal(result.created.includes('.sddx/routing-manifest.yaml'), true);
+  assert.equal(result.created.includes('sddx/config.yaml'), true);
+  assert.equal(result.created.includes('sddx/config.json'), true);
+  assert.equal(result.created.includes('sddx/routing-manifest.yaml'), true);
   assert.equal(result.generatedSkills.generic.length > 110, true);
   assert.equal(result.generatedSkills.cursor.length > 0, true);
 
-  const config = JSON.parse(await readFile(path.join(projectRoot, '.sddx/config.json'), 'utf8'));
+  const config = JSON.parse(await readFile(path.join(projectRoot, 'sddx/config.json'), 'utf8'));
   assert.deepEqual(config.platforms, ['generic', 'cursor']);
-  const openSpecConfig = await readFile(path.join(projectRoot, 'openspec/config.yaml'), 'utf8');
+  assert.equal(config.workspaceDir, 'sddx');
+  assert.equal((await readFile(path.join(projectRoot, 'sddx/config.json'), 'utf8')).includes('"workspaceDir": "sddx"'), true);
+  assert.equal(await access(path.join(projectRoot, 'openspec')).then(() => true, () => false), false);
+  const openSpecConfig = await readFile(path.join(projectRoot, 'sddx/config.yaml'), 'utf8');
   assert.match(openSpecConfig, /schema: spec-driven/);
   assert.match(openSpecConfig, /operations:/);
-  assert.equal((await readFile(path.join(projectRoot, 'openspec/schemas/spec-driven/schema.yaml'), 'utf8')).includes('id: specs'), true);
+  assert.equal((await readFile(path.join(projectRoot, 'sddx/schemas/spec-driven/schema.yaml'), 'utf8')).includes('id: specs'), true);
 
   const explore = await readFile(path.join(projectRoot, '.agents/skills/sddx-explore/SKILL.md'), 'utf8');
   assert.match(explore, /SDDx Explore/);
   assert.match(explore, /deployment/);
   const router = await readFile(path.join(projectRoot, '.agents/skills/sddx-capability-router/SKILL.md'), 'utf8');
   assert.match(router, /capability-catalog/);
-  assert.match(await readFile(path.join(projectRoot, '.sddx/routing-manifest.yaml'), 'utf8'), /sddx-grill-productivity-grilling/);
-  const catalog = JSON.parse(await readFile(path.join(projectRoot, '.sddx/capability-catalog.json'), 'utf8'));
+  assert.match(await readFile(path.join(projectRoot, 'sddx/routing-manifest.yaml'), 'utf8'), /sddx-grill-productivity-grilling/);
+  const catalog = JSON.parse(await readFile(path.join(projectRoot, 'sddx/capability-catalog.json'), 'utf8'));
   assert.equal(catalog.skills.length, 118);
   assert.equal(catalog.skills.some((skill) => skill.requiresExternalCli === true && skill.automatic === false), true);
   assert.equal(catalog.skills.some((skill) => skill.source === 'grill-skills' && skill.roles.includes('facilitation')), true);
@@ -83,7 +86,7 @@ test('initializes focused use-case bundles while retaining core workflows', asyn
   assert.equal(result.selection.skills.includes('sddx-ai-system-design'), true);
   assert.equal(result.selection.skills.includes('sddx-grill-engineering-codebase-design'), true);
 
-  const catalog = JSON.parse(await readFile(path.join(projectRoot, '.sddx/capability-catalog.json'), 'utf8'));
+  const catalog = JSON.parse(await readFile(path.join(projectRoot, 'sddx/capability-catalog.json'), 'utf8'));
   assert.equal(catalog.skills.length, result.selection.skills.length);
   assert.equal(catalog.skills.every((skill) => result.selection.skills.includes(skill.id)), true);
   assert.equal((await readFile(path.join(projectRoot, '.agents/skills/sddx-explore/SKILL.md'), 'utf8')).includes('SDDx Explore'), true);
@@ -93,8 +96,19 @@ test('initializes focused use-case bundles while retaining core workflows', asyn
   const oneSkillRoot = await mkdtemp(path.join(os.tmpdir(), 'sddx-one-skill-'));
   const oneSkill = await initializeProject(oneSkillRoot, ['generic'], { skills: 'sddx-ai-system-design' });
   assert.deepEqual(oneSkill.selection.skills, ['sddx-ai-system-design']);
-  const oneSkillCatalog = JSON.parse(await readFile(path.join(oneSkillRoot, '.sddx/capability-catalog.json'), 'utf8'));
+  const oneSkillCatalog = JSON.parse(await readFile(path.join(oneSkillRoot, 'sddx/capability-catalog.json'), 'utf8'));
   assert.deepEqual(oneSkillCatalog.skills.map((skill) => skill.id), ['sddx-ai-system-design']);
+});
+
+test('supports explicit OpenSpec compatibility layout', async () => {
+  const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'sddx-openspec-layout-'));
+  const result = await initializeProject(projectRoot, ['generic'], { layout: 'openspec' });
+
+  assert.equal(result.created.includes('openspec/config.yaml'), true);
+  assert.equal(result.created.includes('.sddx/config.json'), true);
+  assert.equal((await readFile(path.join(projectRoot, 'openspec/config.yaml'), 'utf8')).includes('schema: spec-driven'), true);
+  assert.equal((await readFile(path.join(projectRoot, '.sddx/config.json'), 'utf8')).includes('"workspaceDir": "openspec"'), true);
+  assert.equal((await readFile(path.join(projectRoot, 'openspec/schemas/spec-driven/schema.yaml'), 'utf8')).includes('id: specs'), true);
 });
 
 test('creates full, quick, and debug change artifacts with next-step metadata', async () => {
@@ -105,9 +119,9 @@ test('creates full, quick, and debug change artifacts with next-step metadata', 
   await createChange(projectRoot, 'Copy tweak', 'quick');
   await createChange(projectRoot, 'Checkout timeout', 'debug');
 
-  const full = await readChange(path.join(projectRoot, 'openspec/changes/payments-redesign'));
-  const quick = await readChange(path.join(projectRoot, 'openspec/changes/copy-tweak'));
-  const debug = await readChange(path.join(projectRoot, 'openspec/changes/checkout-timeout'));
+  const full = await readChange(path.join(projectRoot, 'sddx/changes/payments-redesign'));
+  const quick = await readChange(path.join(projectRoot, 'sddx/changes/copy-tweak'));
+  const debug = await readChange(path.join(projectRoot, 'sddx/changes/checkout-timeout'));
 
   assert.equal(full.files.includes('exploration.md'), true);
   assert.equal(full.files.includes('proposal.md'), false);
@@ -124,7 +138,7 @@ test('creates local RFC and technology-check artifacts without external publishi
   const rfc = await createRfc(projectRoot, 'Search platform');
   const brief = await createTechnologyBrief(projectRoot, 'OpenSearch', 'Search platform');
 
-  assert.match(rfc, /openspec\/changes\/search-platform\/rfc\.md$/);
+  assert.match(rfc, /sddx\/changes\/search-platform\/rfc\.md$/);
   assert.match(brief, /research\/technology-opensearch\.md$/);
   assert.equal((await readFile(rfc, 'utf8')).includes('## Status\nDraft'), true);
   assert.equal((await readFile(brief, 'utf8')).includes('## Status\nPending research'), true);
@@ -141,7 +155,7 @@ test('persists stage handoffs and requires verification evidence before completi
   const staged = await updateChangeStage(projectRoot, 'Profile settings', 'verify');
   assert.equal(staged.currentStage, 'verify');
 
-  const changeRoot = path.join(projectRoot, 'openspec/changes/profile-settings');
+  const changeRoot = path.join(projectRoot, 'sddx/changes/profile-settings');
   await writeFile(path.join(changeRoot, 'proposal.md'), '## Why\n\nA durable profile-settings capability is needed.\n\n## Capabilities\n\n### New Capabilities\n- profile-settings: Manage profile settings.\n', 'utf8');
   await writeFile(path.join(changeRoot, 'tasks.md'), '## 1. Implementation\n\n- [ ] 1.1 Implement and verify profile settings\n', 'utf8');
   await mkdir(path.join(changeRoot, 'specs', 'profile-settings'), { recursive: true });

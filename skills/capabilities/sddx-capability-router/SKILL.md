@@ -5,7 +5,7 @@ description: Select and invoke the most relevant bundled capability skills for t
 
 # SDDx Capability Router
 
-Read `.sddx/capability-catalog.json` before selecting supporting skills. When the SDDx CLI is available, use `sddx skills recommend --stage <stage> --role <roles> --query <terms>` to rank them. The catalog contains the bundled OpenSpec, ai-skills, and grill-skills entries, their source revisions, roles, stages, and direct paths.
+Read `sddx/capability-catalog.json` before selecting supporting skills. If the project uses the explicit OpenSpec compatibility layout, read `.sddx/capability-catalog.json` instead. When the SDDx CLI is available, use `sddx skills recommend --stage <stage> --role <roles> --query <terms>` to rank them. The catalog contains the bundled OpenSpec, ai-skills, and grill-skills entries, their source revisions, roles, stages, and direct paths.
 
 Use the SDDx-native workflow and schema as the default execution path. A small subset of the imported OpenSpec workflow skills declares `Requires openspec CLI`; those remain bundled for manual use and reference, but are not automatically recommended unless the user explicitly requests `--include-external` and has that CLI available. This prevents an installed SDDx project from selecting a command that it cannot execute.
 

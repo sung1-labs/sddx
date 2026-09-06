@@ -166,18 +166,22 @@ sddx skills recommend --stage propose --include-external
 SDDx preserves OpenSpec-compatible planning paths:
 
 ```text
-openspec/
+sddx/
 ├── config.yaml
-├── schemas/
-│   └── spec-driven/
+├── config.json
+├── schemas/spec-driven/
 ├── changes/
 ├── explorations/
-└── specs/
+├── specs/
+├── capability-catalog.json
+└── routing-manifest.yaml
 ```
 
-SDDx-specific installation and routing metadata lives in `.sddx/`, including the portable capability catalog.
+SDDx-specific installation and routing metadata lives in `sddx/`, including the portable capability catalog. This is the default layout: project-owned workflow artifacts live under the SDDx namespace while preserving the OpenSpec-compatible artifact contract.
 
-The project-local `.sddx/routing-manifest.yaml` records the default primary and supporting capability families for every workflow stage. The catalog then narrows those defaults using the change role, risk, and technology.
+For an existing OpenSpec-style project, use `sddx init --layout openspec` to retain its `openspec/` workspace and `.sddx/` metadata. The compatibility layout is opt-in for new projects.
+
+The project-local `sddx/routing-manifest.yaml` records the default primary and supporting capability families for every workflow stage. The catalog then narrows those defaults using the change role, risk, and technology.
 
 Workflow skills are copied into the selected agent directories, while capability skills are routed by role, workflow stage, and change type. They can be invoked automatically from that routing metadata or manually by an agent/user.
 

@@ -5,7 +5,7 @@ description: Turn a resolved SDDx exploration into durable proposal, requirement
 
 # SDDx Propose
 
-Read the exploration and project context before writing. Read `openspec/schemas/spec-driven/schema.yaml` and its templates first; they are the authoritative OpenSpec artifact contract. Create or update the proposal, capability delta specs, conditional design, and verification-bearing tasks required by that schema, then maintain SDDx decisions, risks, and handoff records.
+Read the exploration and project context before writing. Read `sddx/schemas/spec-driven/schema.yaml` and its templates first; they are the authoritative OpenSpec-compatible artifact contract. Create or update the proposal, capability delta specs, conditional design, and verification-bearing tasks required by that schema, then maintain SDDx decisions, risks, and handoff records. For an existing compatibility-layout project, use its configured `openspec/` schema path instead.
 
 Use `sddx-capability-router` to select the relevant OpenSpec proposal/design capability plus architecture, product, UX, domain, security, and DevOps skills. Preserve SDDx's stage and handoff rules when an upstream capability has a different preferred artifact format.
 

@@ -8,11 +8,11 @@ SDDx uses OpenSpec as an artifact contract and foundation, while owning the broa
 - The proposal, spec, design, and tasks templates.
 - All 16 OpenSpec skill directories, including documentation-oriented skills.
 - OpenSpec reference documentation and configuration guidance.
-- OpenSpec-compatible `openspec/config.yaml` and `.openspec.yaml` metadata.
+- OpenSpec-compatible `sddx/config.yaml` and `.openspec.yaml` metadata.
 
 ## SDDx extensions
 
-SDDx adds exploration, decisions, handoff, verification, quick, and debugging artifacts around the OpenSpec planning graph. These extensions live in `.sddx.yaml` and do not replace the OpenSpec schema metadata.
+SDDx adds exploration, decisions, handoff, verification, quick, and debugging artifacts around the OpenSpec planning graph. These extensions live in `.sddx.yaml` and do not replace the OpenSpec schema metadata. The default workspace is `sddx/`; existing projects may retain `openspec/` through compatibility layout.
 
 The full workflow follows the OpenSpec dependency contract:
 

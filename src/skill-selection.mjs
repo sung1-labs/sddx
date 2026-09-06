@@ -96,7 +96,7 @@ export function resolveSkillSelection({ skills = '', profile = '', availableSkil
 
   for (const skill of requestedSkills) {
     if (skill.toLowerCase() === 'all') return { mode: 'all', profiles: requestedProfiles, skills: [...knownSkills].sort() };
-    if (!knownSkills.has(skill)) throw new Error(`Unknown bundled skill: ${skill}. Use an id from .sddx/capability-catalog.json.`);
+    if (!knownSkills.has(skill)) throw new Error(`Unknown bundled skill: ${skill}. Use an id from sddx/capability-catalog.json.`);
     selected.add(skill);
   }
 

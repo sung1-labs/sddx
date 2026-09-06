@@ -15,6 +15,35 @@ async function exists(target) {
   }
 }
 
+export async function resolveProjectLayout(projectRoot, requestedLayout) {
+  const absoluteRoot = path.resolve(projectRoot);
+  if (requestedLayout && !['sddx', 'openspec'].includes(requestedLayout)) {
+    throw new Error(`Unknown layout: ${requestedLayout}. Use sddx or openspec.`);
+  }
+
+  if (requestedLayout === 'openspec') {
+    return { workspaceDir: 'openspec', metadataDir: '.sddx', legacy: true };
+  }
+  if (requestedLayout === 'sddx') {
+    return { workspaceDir: 'sddx', metadataDir: 'sddx', legacy: false };
+  }
+
+  const modernConfig = path.join(absoluteRoot, 'sddx', 'config.json');
+  if (await exists(modernConfig)) return { workspaceDir: 'sddx', metadataDir: 'sddx', legacy: false };
+
+  const legacyConfig = path.join(absoluteRoot, '.sddx', 'config.json');
+  if (await exists(legacyConfig)) {
+    const config = JSON.parse(await readFile(legacyConfig, 'utf8'));
+    if (config.workspaceDir === 'sddx') return { workspaceDir: 'sddx', metadataDir: 'sddx', legacy: false };
+    return { workspaceDir: 'openspec', metadataDir: '.sddx', legacy: true };
+  }
+
+  if (await exists(path.join(absoluteRoot, 'openspec', 'config.yaml'))) {
+    return { workspaceDir: 'openspec', metadataDir: '.sddx', legacy: true };
+  }
+  return { workspaceDir: 'sddx', metadataDir: 'sddx', legacy: false };
+}
+
 async function writeIfMissing(filePath, contents) {
   if (!(await exists(filePath))) {
     await mkdir(path.dirname(filePath), { recursive: true });
@@ -32,7 +61,7 @@ function yamlScalar(value) {
 
 function renderConfig(config) {
   return [
-    '# OpenSpec-compatible project configuration for SDDx',
+    '# SDDx project configuration with an OpenSpec-compatible artifact contract',
     `schema: ${config.schema}`,
     'context: |',
     '  SDDx manages lifecycle state in project artifacts and keeps the OpenSpec artifact contract authoritative.',
@@ -100,6 +129,9 @@ async function copySkills(projectRoot, platform, selectedSkills) {
 
 export async function initializeProject(projectRoot, platforms, options = {}) {
   const absoluteRoot = path.resolve(projectRoot);
+  const layout = await resolveProjectLayout(absoluteRoot, options.layout);
+  const workspaceRoot = path.join(absoluteRoot, layout.workspaceDir);
+  const metadataRoot = path.join(absoluteRoot, layout.metadataDir);
   const packageCatalog = JSON.parse(await readFile(path.join(SKILLS_ROOT, 'capabilities', 'catalog.json'), 'utf8'));
   const selection = resolveSkillSelection({
     skills: options.skills ?? '',
@@ -110,8 +142,9 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
   const config = {
     version: 1,
     schema: 'spec-driven',
+    workspaceDir: layout.workspaceDir,
     platforms,
-    schemaPath: 'openspec/schemas/spec-driven',
+    schemaPath: `${layout.workspaceDir}/schemas/spec-driven`,
     skillRouting: 'automatic',
     externalPublishing: { confluence: 'opt-in' },
     skillScope: selection.mode,
@@ -119,33 +152,33 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
     installedSkills: selection.skills,
   };
 
-  await mkdir(path.join(absoluteRoot, 'openspec', 'changes'), { recursive: true });
-  await mkdir(path.join(absoluteRoot, 'openspec', 'specs'), { recursive: true });
-  await mkdir(path.join(absoluteRoot, 'openspec', 'explorations'), { recursive: true });
-  await mkdir(path.join(absoluteRoot, 'openspec', 'schemas'), { recursive: true });
-  await mkdir(path.join(absoluteRoot, '.sddx'), { recursive: true });
+  await mkdir(path.join(workspaceRoot, 'changes'), { recursive: true });
+  await mkdir(path.join(workspaceRoot, 'specs'), { recursive: true });
+  await mkdir(path.join(workspaceRoot, 'explorations'), { recursive: true });
+  await mkdir(path.join(workspaceRoot, 'schemas'), { recursive: true });
+  await mkdir(metadataRoot, { recursive: true });
 
   const created = [];
-  if (await writeIfMissing(path.join(absoluteRoot, 'openspec', 'config.yaml'), renderConfig(config))) {
-    created.push('openspec/config.yaml');
+  if (await writeIfMissing(path.join(workspaceRoot, 'config.yaml'), renderConfig(config))) {
+    created.push(path.join(layout.workspaceDir, 'config.yaml'));
   }
   const schemaSource = path.join(PACKAGE_ROOT, 'schemas', 'spec-driven');
-  const schemaTarget = path.join(absoluteRoot, 'openspec', 'schemas', 'spec-driven');
+  const schemaTarget = path.join(workspaceRoot, 'schemas', 'spec-driven');
   if (!(await exists(schemaTarget))) {
     await cp(schemaSource, schemaTarget, { recursive: true });
-    created.push('openspec/schemas/spec-driven');
+    created.push(path.join(layout.workspaceDir, 'schemas/spec-driven'));
   }
-  if (await writeIfMissing(path.join(absoluteRoot, '.sddx', 'config.json'), `${JSON.stringify(config, null, 2)}\n`)) {
-    created.push('.sddx/config.json');
+  if (await writeIfMissing(path.join(metadataRoot, 'config.json'), `${JSON.stringify(config, null, 2)}\n`)) {
+    created.push(path.join(layout.metadataDir, 'config.json'));
   }
   if (await writeIfMissing(
-    path.join(absoluteRoot, '.sddx', 'README.md'),
-    '# SDDx project state\n\nSDDx keeps workflow state in version-controlled project artifacts.\n\nRead `capability-catalog.json` and `routing-manifest.yaml` through `sddx-capability-router` to select relevant bundled skills automatically by stage, role, risk, and technology. Every catalog entry is also available for manual invocation.\n',
+    path.join(metadataRoot, 'README.md'),
+    '# SDDx project workspace\n\nSDDx keeps workflow state in version-controlled project artifacts. The default workspace is `sddx/`; its schema and change records follow the OpenSpec artifact contract without requiring an `openspec/` directory.\n\nRead `capability-catalog.json` and `routing-manifest.yaml` through `sddx-capability-router` to select relevant bundled skills automatically by stage, role, risk, and technology. Every catalog entry is also available for manual invocation.\n',
   )) {
-    created.push('.sddx/README.md');
+    created.push(path.join(layout.metadataDir, 'README.md'));
   }
   if (await writeIfMissing(
-    path.join(absoluteRoot, '.sddx', 'capability-catalog.json'),
+    path.join(metadataRoot, 'capability-catalog.json'),
     `${JSON.stringify({
       ...packageCatalog,
       skills: selection.mode === 'all'
@@ -153,13 +186,13 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
         : packageCatalog.skills.filter((skill) => selectedSkillSet.has(skill.id)),
     }, null, 2)}\n`,
   )) {
-    created.push('.sddx/capability-catalog.json');
+    created.push(path.join(layout.metadataDir, 'capability-catalog.json'));
   }
   if (await writeIfMissing(
-    path.join(absoluteRoot, '.sddx', 'routing-manifest.yaml'),
+    path.join(metadataRoot, 'routing-manifest.yaml'),
     await readFile(path.join(SKILLS_ROOT, 'capabilities', 'manifest.yaml'), 'utf8'),
   )) {
-    created.push('.sddx/routing-manifest.yaml');
+    created.push(path.join(layout.metadataDir, 'routing-manifest.yaml'));
   }
 
   const generatedSkills = {};
@@ -171,13 +204,15 @@ export async function initializeProject(projectRoot, platforms, options = {}) {
 }
 
 export async function readProjectConfig(projectRoot) {
-  const filePath = path.join(path.resolve(projectRoot), '.sddx', 'config.json');
+  const layout = await resolveProjectLayout(projectRoot);
+  const filePath = path.join(path.resolve(projectRoot), layout.metadataDir, 'config.json');
   if (!(await exists(filePath))) return null;
   return JSON.parse(await readFile(filePath, 'utf8'));
 }
 
 export async function listChanges(projectRoot) {
-  const root = path.join(path.resolve(projectRoot), 'openspec', 'changes');
+  const layout = await resolveProjectLayout(projectRoot);
+  const root = path.join(path.resolve(projectRoot), layout.workspaceDir, 'changes');
   if (!(await exists(root))) return [];
   const entries = await readdir(root, { withFileTypes: true });
   return entries.filter((entry) => entry.isDirectory() && entry.name !== 'archive').map((entry) => entry.name).sort();

@@ -1,5 +1,6 @@
 import { mkdir, writeFile, access, readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveProjectLayout } from './project.mjs';
 
 async function exists(filePath) {
   try {
@@ -45,7 +46,8 @@ const TEMPLATES = {
 export async function createChange(projectRoot, name, workflow = 'full') {
   if (!TEMPLATES[workflow]) throw new Error(`Unknown workflow: ${workflow}. Use full, quick, or debug.`);
   const slug = slugify(name);
-  const changeRoot = path.join(path.resolve(projectRoot), 'openspec', 'changes', slug);
+  const layout = await resolveProjectLayout(projectRoot);
+  const changeRoot = path.join(path.resolve(projectRoot), layout.workspaceDir, 'changes', slug);
   if (await exists(changeRoot)) throw new Error(`Change already exists: ${slug}`);
 
   await mkdir(changeRoot, { recursive: true });
@@ -86,7 +88,8 @@ export async function readChange(changeRoot) {
 }
 
 export async function listChangeRoots(projectRoot) {
-  const root = path.join(path.resolve(projectRoot), 'openspec', 'changes');
+  const layout = await resolveProjectLayout(projectRoot);
+  const root = path.join(path.resolve(projectRoot), layout.workspaceDir, 'changes');
   if (!(await exists(root))) return [];
   const entries = await readdir(root, { withFileTypes: true });
   return entries
@@ -99,7 +102,8 @@ export async function updateChangeStage(projectRoot, name, stage) {
   const allowedStages = new Set(['explore', 'propose', 'apply', 'diagnose', 'verify', 'archive']);
   if (!allowedStages.has(stage)) throw new Error(`Unknown stage: ${stage}. Use explore, propose, apply, diagnose, verify, or archive.`);
   const slug = slugify(name);
-  const changeRoot = path.join(path.resolve(projectRoot), 'openspec', 'changes', slug);
+  const layout = await resolveProjectLayout(projectRoot);
+  const changeRoot = path.join(path.resolve(projectRoot), layout.workspaceDir, 'changes', slug);
   const metadataPath = path.join(changeRoot, '.sddx.yaml');
   if (!(await exists(metadataPath))) throw new Error(`Change does not exist: ${name}`);
   const metadata = await readFile(metadataPath, 'utf8');

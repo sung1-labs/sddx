@@ -1,8 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveProjectLayout } from './project.mjs';
 
 export async function loadCatalog(projectRoot) {
-  const filePath = path.join(path.resolve(projectRoot), '.sddx', 'capability-catalog.json');
+  const layout = await resolveProjectLayout(projectRoot);
+  const filePath = path.join(path.resolve(projectRoot), layout.metadataDir, 'capability-catalog.json');
   return JSON.parse(await readFile(filePath, 'utf8'));
 }
 

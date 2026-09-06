@@ -11,4 +11,4 @@ Use `sddx-capability-router` for documentation, release, operational handoff, an
 
 If an RFC or design document was published, retain its provider, page identifier, URL, and synchronization status locally. Produce a concise archive summary and recommend the next workflow, such as a follow-up change, release preparation, or retrospective.
 
-Use `sddx archive <change-name>` only after verification has passed. The CLI moves the complete durable record into `openspec/changes/archive/`.
+Use `sddx archive <change-name>` only after verification has passed. The CLI moves the complete durable record into the configured workspace's `changes/archive/` directory, which defaults to `sddx/changes/archive/`.

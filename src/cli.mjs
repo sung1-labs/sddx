@@ -1,7 +1,7 @@
 import { mkdir, rename } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import process from 'node:process';
-import { initializeProject, listChanges, readProjectConfig } from './project.mjs';
+import { initializeProject, listChanges, readProjectConfig, resolveProjectLayout } from './project.mjs';
 import { parsePlatformList, PLATFORMS } from './platforms.mjs';
 import { createChange, listChangeRoots, nextForChange, readChange, updateChangeStage } from './change.mjs';
 import { createRfc, createTechnologyBrief } from './artifacts.mjs';
@@ -119,8 +119,9 @@ async function askForPlatforms() {
 }
 
 async function initCommand(args) {
-  const projectRoot = positionalArgs(args, ['--platform', '--skills', '--profile', '--use-case'])[0] ?? '.';
+  const projectRoot = positionalArgs(args, ['--platform', '--skills', '--profile', '--use-case', '--layout'])[0] ?? '.';
   const explicitPlatforms = optionValue(args, '--platform');
+  const layout = optionValue(args, '--layout');
   const skills = optionValue(args, '--skills') ?? '';
   const profile = optionValue(args, '--profile') ?? optionValue(args, '--use-case') ?? '';
   let platforms;
@@ -134,7 +135,7 @@ async function initCommand(args) {
     platforms = await askForPlatforms();
   }
 
-  const result = await initializeProject(projectRoot, platforms, { skills, profile });
+  const result = await initializeProject(projectRoot, platforms, { skills, profile, layout });
   console.log(`Initialized SDDx in ${result.root}`);
   console.log(`Platforms: ${platforms.map((platform) => PLATFORMS[platform].label).join(', ')}`);
   console.log(`Skill scope: ${result.selection.mode}${result.selection.profiles.length > 0 ? ` (${result.selection.profiles.join(', ')})` : ''}`);
@@ -227,7 +228,8 @@ async function archiveCommand(args) {
   const detail = result.changeDetails.find((item) => item.name === changeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''));
   if (!detail || !detail.passed) throw new Error(`Change ${changeName} is not verified. Run sddx verify and resolve all failures first.`);
   const changeRoot = (await listChangeRoots(projectRoot)).find((root) => root.endsWith(`/${detail.name}`));
-  const archiveRoot = `${projectRoot.replace(/\/$/, '')}/openspec/changes/archive`;
+  const layout = await resolveProjectLayout(projectRoot);
+  const archiveRoot = `${projectRoot.replace(/\/$/, '')}/${layout.workspaceDir}/changes/archive`;
   await mkdir(archiveRoot, { recursive: true });
   const destination = `${archiveRoot}/${detail.name}`;
   await rename(changeRoot, destination);
@@ -288,7 +290,7 @@ function help() {
   console.log(`SDDx ${version} — Spec-Driven Development for AI-assisted engineering
 
 Usage:
-  sddx init [path] [--platform <names>] [--profile <name>] [--skills <ids>] [--no-interactive]
+  sddx init [path] [--platform <names>] [--profile <name>] [--skills <ids>] [--layout sddx|openspec] [--no-interactive]
   sddx new <change-name> [--workflow full|quick|debug] [--path <project>]
   sddx status [path] [--path <project>] [--json]
   sddx next [path] [--path <project>] [--json]
@@ -304,6 +306,10 @@ Platforms:
 
 Skill profiles:
   sdlc, product, architecture, frontend, backend, debugging, devops, documentation
+
+Workspace layouts:
+  sddx       Default; stores the durable workflow under sddx/
+  openspec   Compatibility mode for existing OpenSpec-style projects
 
 General options:
   -h, --help       Show this help message

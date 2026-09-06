@@ -33,6 +33,12 @@ sddx init --platform codex,claude --no-interactive
 
 Use --platform all to configure every supported platform. In interactive mode, use the arrow keys to move through the platform list, Space to select or deselect, Enter to confirm, `a` to select all, and Escape to cancel.
 
+By default, SDDx creates one visible `sddx/` workspace containing the configuration, schemas, changes, specifications, explorations, and routing metadata. This keeps project-owned artifacts under the SDDx namespace while using the OpenSpec-compatible artifact contract. To initialize an existing project that must retain the OpenSpec layout, use:
+
+~~~bash
+sddx init --layout openspec --platform codex --no-interactive
+~~~
+
 By default, initialization installs the complete capability bundle. Use a profile or one or more exact catalog ids for a focused installation:
 
 ~~~bash
@@ -57,15 +63,13 @@ Initialization is additive: existing files are preserved where possible. Commit 
 ## Project layout
 
 ~~~text
-openspec/
+sddx/
 ├── config.yaml
+├── config.json
 ├── schemas/spec-driven/
 ├── changes/
 ├── explorations/
-└── specs/
-
-.sddx/
-├── config.json
+├── specs/
 ├── capability-catalog.json
 ├── routing-manifest.yaml
 └── README.md
@@ -82,7 +86,7 @@ openspec/
 └── bundled capability skills/
 ~~~
 
-The change directory and project metadata—not a model session—are the source of truth.
+The change directory and project metadata—not a model session—are the source of truth. Existing compatibility-layout projects may use `openspec/changes/` and `.sddx/` when their configuration was initialized that way.
 
 ## Select a workflow
 
@@ -205,7 +209,7 @@ sddx verify --path . --json
 sddx archive billing-export --path .
 ~~~
 
-Archive is blocked until verification passes. The complete change record is moved to openspec/changes/archive/.
+Archive is blocked until verification passes. The complete change record is moved to `sddx/changes/archive/` by default.
 
 ## RFCs and architecture reviews
 

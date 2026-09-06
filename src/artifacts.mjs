@@ -1,5 +1,6 @@
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveProjectLayout } from './project.mjs';
 
 async function exists(filePath) {
   try {
@@ -16,7 +17,8 @@ function slugify(value) {
 
 async function resolveChange(projectRoot, changeName) {
   if (!changeName) throw new Error('A change name is required.');
-  const changeRoot = path.join(path.resolve(projectRoot), 'openspec', 'changes', slugify(changeName));
+  const layout = await resolveProjectLayout(projectRoot);
+  const changeRoot = path.join(path.resolve(projectRoot), layout.workspaceDir, 'changes', slugify(changeName));
   if (!(await exists(changeRoot))) throw new Error(`Change does not exist: ${changeName}`);
   return changeRoot;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@sung1-labs/sddx",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Agentic SDLC for AI coding agents: spec-driven workflows from product discovery and architecture to implementation, verification, debugging, DevOps, and delivery.",
   "type": "module",
   "bin": {
